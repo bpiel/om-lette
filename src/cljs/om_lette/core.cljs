@@ -6,7 +6,7 @@
             [sablono.core :as sab :refer-macros [html]]
             [hickory.core :as hick]))
 
-(defonce app-state (atom {"hi" "yes!"}))
+(defonce app-state (atom {"val1" 1 "val2" 1}))
 
 (defonce template-cache (atom {}))
 
@@ -31,7 +31,7 @@
               (make-template-handler %)
               (getTemplate %)) names))
 
-(defn dbg [x] (.log js/console x))
+(defn dbg [x] (.log js/console x) x)
 
 (defn process-template
   [html state]
@@ -42,8 +42,8 @@
                  (walk/postwalk
                    #(if (string? %)
                       (clojure.string/replace %
-                                              #"\{\{.*?\}\}"
-                                              "X")
+                                              #"\{\{(.*?)\}\}"
+                                              (fn [_ b] (get state b "")))
                       %)))))
 
 
@@ -59,3 +59,10 @@
 
 
 (load-templates ["hello.html"] init)
+
+(js/setTimeout #(swap! app-state update-in ["val1"] inc) 1000)
+(js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 2000)
+(js/setTimeout #(swap! app-state update-in ["val1"] inc) 3000)
+(js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 4000)
+(js/setTimeout #(swap! app-state update-in ["val1"] inc) 5000)
+(js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 6000)
