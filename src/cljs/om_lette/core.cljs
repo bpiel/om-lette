@@ -6,7 +6,7 @@
             [sablono.core :as sab :refer-macros [html]]
             [hickory.core :as hick]))
 
-(defonce app-state (atom {"val1" 1 "val2" 1}))
+(defonce app-state (atom {"val1" 1 "val2" 1 "show" true}))
 
 (defonce template-cache (atom {}))
 
@@ -34,14 +34,14 @@
 (defn dbg [x] (.log js/console x) x)
 
 (defn like-html-vec?
-      [h]
-      (if (and (vector? h) (-> h first keyword?)(-> h second map?))
-      	  h
-	  nil))
+  [h]
+  (if (and (vector? h) (-> h first keyword?)(-> h second map?))
+    h
+    nil))
 
 (defn has-om-if?
-     [h]
-     (-> h like-html-vec? second (get "om-if")))
+  [h]
+  (-> h like-html-vec? second :om-if))
 
 (defn cont-pass
   [& fns]
@@ -57,17 +57,17 @@
                  (map hick/as-hiccup)
                  first
                  (walk/prewalk
-			(cont-pass
-			  (fn [v f]
-                            (if (string? v)
-                              (clojure.string/replace v
-                                                      #"\{\{(.*?)\}\}"
-                                                      (fn [_ b] (get state b "")))
-                              (f v)))
-			  #(if-let [ifx (has-om-if? %)]
-                             (if (get state ifx)
-                               (%2 %))
-                             (%2 %)))))))
+                  (cont-pass
+                   (fn [v f]
+                     (if (string? v)
+                       (clojure.string/replace v
+                                               #"\{\{(.*?)\}\}"
+                                               (fn [_ b] (get state b "")))
+                       (f v)))
+                   #(if-let [ifx (has-om-if? %)]
+                      (if (get state ifx)
+                        (%2 %))
+                      (%2 %)))))))
 
 
 
@@ -77,7 +77,7 @@
 (defn init []
   (let [main (fn [state owner]
                (reify om/IRender (render [this]
-                                         (-> (get @template-cache "hello.html") (process-template state)))))]
+                                   (-> (get @template-cache "hello.html") (process-template state)))))]
     (om/root main app-state
              {:target (.getElementById js/document "app")})))
 
@@ -86,7 +86,11 @@
 
 (js/setTimeout #(swap! app-state update-in ["val1"] inc) 1000)
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 2000)
+(js/setTimeout #(swap! app-state update-in ["show"] not) 1200)
 (js/setTimeout #(swap! app-state update-in ["val1"] inc) 3000)
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 4000)
+(js/setTimeout #(swap! app-state update-in ["show"] not) 2400)
 (js/setTimeout #(swap! app-state update-in ["val1"] inc) 5000)
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 6000)
+(js/setTimeout #(swap! app-state update-in ["show"] not) 3600)
+(js/setTimeout #(swap! app-state update-in ["show"] not) 4000)

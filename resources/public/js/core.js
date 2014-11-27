@@ -47628,7 +47628,7 @@ goog.require("hickory.core");
 goog.require("clojure.walk");
 if (typeof om_lette.core.app_state !== "undefined") {
 } else {
-  om_lette.core.app_state = cljs.core.atom.call(null, new cljs.core.PersistentArrayMap(null, 2, ["val1", 1, "val2", 1], null));
+  om_lette.core.app_state = cljs.core.atom.call(null, new cljs.core.PersistentArrayMap(null, 3, ["val1", 1, "val2", 1, "show", true], null));
 }
 if (typeof om_lette.core.template_cache !== "undefined") {
 } else {
@@ -47656,8 +47656,8 @@ om_lette.core.getTemplate = function getTemplate(name, handler) {
   return ajax.core.GET.call(null, "/js/templates/" + cljs.core.str.cljs$core$IFn$_invoke$arity$1(name), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "handler", "handler", -195596612), handler], null));
 };
 om_lette.core.load_templates = function load_templates(names, callback) {
-  return cljs.core.mapv.call(null, function(p1__7412_SHARP_) {
-    return om_lette.core.getTemplate.call(null, p1__7412_SHARP_, om_lette.core.make_template_handler.call(null, p1__7412_SHARP_, om_lette.core.make_done_loading_QMARK__fn.call(null, names, callback)));
+  return cljs.core.mapv.call(null, function(p1__9686_SHARP_) {
+    return om_lette.core.getTemplate.call(null, p1__9686_SHARP_, om_lette.core.make_template_handler.call(null, p1__9686_SHARP_, om_lette.core.make_done_loading_QMARK__fn.call(null, names, callback)));
   }, names);
 };
 om_lette.core.dbg = function dbg(x) {
@@ -47672,7 +47672,7 @@ om_lette.core.like_html_vec_QMARK_ = function like_html_vec_QMARK_(h) {
   }
 };
 om_lette.core.has_om_if_QMARK_ = function has_om_if_QMARK_(h) {
-  return cljs.core.get.call(null, cljs.core.second.call(null, om_lette.core.like_html_vec_QMARK_.call(null, h)), "om-if");
+  return(new cljs.core.Keyword(null, "om-if", "om-if", 1184973531)).cljs$core$IFn$_invoke$arity$1(cljs.core.second.call(null, om_lette.core.like_html_vec_QMARK_.call(null, h)));
 };
 om_lette.core.cont_pass = function() {
   var cont_pass__delegate = function(fns) {
@@ -47692,8 +47692,8 @@ om_lette.core.cont_pass = function() {
     return cont_pass__delegate.call(this, fns);
   };
   cont_pass.cljs$lang$maxFixedArity = 0;
-  cont_pass.cljs$lang$applyTo = function(arglist__7413) {
-    var fns = cljs.core.seq(arglist__7413);
+  cont_pass.cljs$lang$applyTo = function(arglist__9687) {
+    var fns = cljs.core.seq(arglist__9687);
     return cont_pass__delegate(fns);
   };
   cont_pass.cljs$core$IFn$_invoke$arity$variadic = cont_pass__delegate;
@@ -47708,58 +47708,58 @@ om_lette.core.process_template = function process_template(html, state) {
     } else {
       return f.call(null, v);
     }
-  }, function(p1__7414_SHARP_, p2__7415_SHARP_) {
-    var temp__4124__auto__ = om_lette.core.has_om_if_QMARK_.call(null, p1__7414_SHARP_);
+  }, function(p1__9688_SHARP_, p2__9689_SHARP_) {
+    var temp__4124__auto__ = om_lette.core.has_om_if_QMARK_.call(null, p1__9688_SHARP_);
     if (cljs.core.truth_(temp__4124__auto__)) {
       var ifx = temp__4124__auto__;
       if (cljs.core.truth_(cljs.core.get.call(null, state, ifx))) {
-        return p2__7415_SHARP_.call(null, p1__7414_SHARP_);
+        return p2__9689_SHARP_.call(null, p1__9688_SHARP_);
       } else {
         return null;
       }
     } else {
-      return p2__7415_SHARP_.call(null, p1__7414_SHARP_);
+      return p2__9689_SHARP_.call(null, p1__9688_SHARP_);
     }
   }), cljs.core.first.call(null, cljs.core.map.call(null, hickory.core.as_hiccup, hickory.core.parse_fragment.call(null, html)))));
 };
 om_lette.core.init = function init() {
   var main = function(state, owner) {
-    if (typeof om_lette.core.t7419 !== "undefined") {
+    if (typeof om_lette.core.t9693 !== "undefined") {
     } else {
-      om_lette.core.t7419 = function(owner, state, init, meta7420) {
+      om_lette.core.t9693 = function(owner, state, init, meta9694) {
         this.owner = owner;
         this.state = state;
         this.init = init;
-        this.meta7420 = meta7420;
+        this.meta9694 = meta9694;
         this.cljs$lang$protocol_mask$partition1$ = 0;
         this.cljs$lang$protocol_mask$partition0$ = 393216;
       };
-      om_lette.core.t7419.cljs$lang$type = true;
-      om_lette.core.t7419.cljs$lang$ctorStr = "om-lette.core/t7419";
-      om_lette.core.t7419.cljs$lang$ctorPrWriter = function(this__4217__auto__, writer__4218__auto__, opt__4219__auto__) {
-        return cljs.core._write.call(null, writer__4218__auto__, "om-lette.core/t7419");
+      om_lette.core.t9693.cljs$lang$type = true;
+      om_lette.core.t9693.cljs$lang$ctorStr = "om-lette.core/t9693";
+      om_lette.core.t9693.cljs$lang$ctorPrWriter = function(this__4217__auto__, writer__4218__auto__, opt__4219__auto__) {
+        return cljs.core._write.call(null, writer__4218__auto__, "om-lette.core/t9693");
       };
-      om_lette.core.t7419.prototype.om$core$IRender$ = true;
-      om_lette.core.t7419.prototype.om$core$IRender$render$arity$1 = function(this$) {
+      om_lette.core.t9693.prototype.om$core$IRender$ = true;
+      om_lette.core.t9693.prototype.om$core$IRender$render$arity$1 = function(this$) {
         var self__ = this;
         var this$__$1 = this;
         return om_lette.core.process_template.call(null, cljs.core.get.call(null, cljs.core.deref.call(null, om_lette.core.template_cache), "hello.html"), self__.state);
       };
-      om_lette.core.t7419.prototype.cljs$core$IMeta$_meta$arity$1 = function(_7421) {
+      om_lette.core.t9693.prototype.cljs$core$IMeta$_meta$arity$1 = function(_9695) {
         var self__ = this;
-        var _7421__$1 = this;
-        return self__.meta7420;
+        var _9695__$1 = this;
+        return self__.meta9694;
       };
-      om_lette.core.t7419.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(_7421, meta7420__$1) {
+      om_lette.core.t9693.prototype.cljs$core$IWithMeta$_with_meta$arity$2 = function(_9695, meta9694__$1) {
         var self__ = this;
-        var _7421__$1 = this;
-        return new om_lette.core.t7419(self__.owner, self__.state, self__.init, meta7420__$1);
+        var _9695__$1 = this;
+        return new om_lette.core.t9693(self__.owner, self__.state, self__.init, meta9694__$1);
       };
-      om_lette.core.__GT_t7419 = function __GT_t7419(owner__$1, state__$1, init__$1, meta7420) {
-        return new om_lette.core.t7419(owner__$1, state__$1, init__$1, meta7420);
+      om_lette.core.__GT_t9693 = function __GT_t9693(owner__$1, state__$1, init__$1, meta9694) {
+        return new om_lette.core.t9693(owner__$1, state__$1, init__$1, meta9694);
       };
     }
-    return new om_lette.core.t7419(owner, state, init, null);
+    return new om_lette.core.t9693(owner, state, init, null);
   };
   return om.core.root.call(null, main, om_lette.core.app_state, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "target", "target", 253001721), document.getElementById("app")], null));
 };
@@ -47771,16 +47771,28 @@ setTimeout(function() {
   return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["val2"], null), cljs.core.partial.call(null, cljs.core._STAR_, 2));
 }, 2E3);
 setTimeout(function() {
+  return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["show"], null), cljs.core.not);
+}, 1200);
+setTimeout(function() {
   return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["val1"], null), cljs.core.inc);
 }, 3E3);
 setTimeout(function() {
   return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["val2"], null), cljs.core.partial.call(null, cljs.core._STAR_, 2));
 }, 4E3);
 setTimeout(function() {
+  return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["show"], null), cljs.core.not);
+}, 2400);
+setTimeout(function() {
   return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["val1"], null), cljs.core.inc);
 }, 5E3);
 setTimeout(function() {
   return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["val2"], null), cljs.core.partial.call(null, cljs.core._STAR_, 2));
 }, 6E3);
+setTimeout(function() {
+  return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["show"], null), cljs.core.not);
+}, 3600);
+setTimeout(function() {
+  return cljs.core.swap_BANG_.call(null, om_lette.core.app_state, cljs.core.update_in, new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, ["show"], null), cljs.core.not);
+}, 4E3);
 
 //# sourceMappingURL=core.js.map
