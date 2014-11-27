@@ -6,7 +6,7 @@
             [sablono.core :as sab :refer-macros [html]]
             [hickory.core :as hick]))
 
-(defonce app-state (atom {"val1" 1 "val2" 1 "show" true}))
+(defonce app-state (atom {"val1" 1 "val2" 1 "show" true "vec" [1 2 3]}))
 
 (defonce template-cache (atom {}))
 
@@ -32,6 +32,15 @@
               (getTemplate %)) names))
 
 (defn dbg [x] (.log js/console x) x)
+(defn sdbg [x] (.log js/console (str x)) x)
+
+;; regex
+(def nonnum "[a-zA-Z\\*\\+!\\-\\_\\?]")
+(def valid-sym-chars "[\\w\\d\\*\\+!\\-\\_\\?]")
+(def valid-sym (str nonnum "+" valid-sym-chars "*"))
+(def om-repeat-expr (str "^=>\\s+(" valid-sym ")\\s+(" valid-sym ")\\s*$"))
+
+;; *******
 
 (defn like-html-vec?
   [h]
@@ -43,6 +52,18 @@
   [h]
   (-> h like-html-vec? second :om-if))
 
+(defn has-om-repeat?
+  [h]
+  (->> h
+       like-html-vec?
+       second
+       :om-repeat
+       (#(or % ""))
+       (re-find (re-pattern om-repeat-expr))
+       rest
+       not-empty
+       ))
+
 (defn cont-pass
   [& fns]
   (fn [v] (if (not-empty fns)
@@ -50,24 +71,43 @@
             (->> fns rest (apply cont-pass)))
            v)))
 
+(defn strip-attrs [tag & xattrs]
+  (let [[name attrs & rest] tag] (vec (concat [name (apply dissoc attrs xattrs)] rest))))
+
+(defn process-html-struc
+  [state html]
+  (->> html (walk/prewalk
+             (cont-pass
+              (fn [v f]
+                (if (string? v)
+                  (clojure.string/replace v
+                                          #"\{\{(.*?)\}\}"
+                                          (fn [_ b] (get state b "")))
+                  (f v)))
+              (fn [v f]
+                (if-let [ifx (has-om-if? v)]
+                  (if (get state ifx)
+                    (f v)))
+                (f v))
+              (fn [v f]
+                (if-let [[lst kw] (has-om-repeat? v)]
+                  (f (->> lst
+                          (get state)
+                          (mapv #(process-html-struc (assoc state kw %)
+                                                     (strip-attrs v :om-repeat)))
+                          (concat [:div {:data-om "bill"}]) ;; what should go here?
+                          vec))
+                  (f v)))
+              ))))
+
 (defn process-template
-  [html state]
-  (sab/html (->> html
+  [state html-string]
+  (sab/html (->> html-string
                  hick/parse-fragment
                  (map hick/as-hiccup)
                  first
-                 (walk/prewalk
-                  (cont-pass
-                   (fn [v f]
-                     (if (string? v)
-                       (clojure.string/replace v
-                                               #"\{\{(.*?)\}\}"
-                                               (fn [_ b] (get state b "")))
-                       (f v)))
-                   #(if-let [ifx (has-om-if? %)]
-                      (if (get state ifx)
-                        (%2 %))
-                      (%2 %)))))))
+                 (process-html-struc state)
+                )))
 
 
 
@@ -77,7 +117,7 @@
 (defn init []
   (let [main (fn [state owner]
                (reify om/IRender (render [this]
-                                   (-> (get @template-cache "hello.html") (process-template state)))))]
+                                   (->> (get @template-cache "hello.html") (process-template state)))))]
     (om/root main app-state
              {:target (.getElementById js/document "app")})))
 
