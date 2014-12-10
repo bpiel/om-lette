@@ -10,7 +10,8 @@
                  [hickory "0.5.4"]]
 
   :plugins [[lein-cljsbuild "1.0.3"]
-            [lein-ring "0.8.13"]]
+            [lein-ring "0.8.13"]
+            [cider/cider-nrepl "0.7.0"]]
 
   :hooks [leiningen.cljsbuild]
 

@@ -1,9 +1,5 @@
-(ns om-lette.core
+(ns om-lette.copy
   (:require [clojure.walk :as walk]
-            [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]
-            [ajax.core :refer [GET POST]]
-            [sablono.core :as sab :refer-macros [html]]
             [hickory.core :as hick]
             [clojure.string :as s]))
 
@@ -23,17 +19,6 @@
   (fn handler [response]
     (swap! template-cache assoc template-name response)
     (callback)))
-
-(defn getTemplate [name handler]
-  (GET (str "/js/templates/" name) {:handler handler}))
-
-(defn load-templates [names callback]
-  (mapv #(->> (make-done-loading?-fn names callback)
-              (make-template-handler %)
-              (getTemplate %)) names))
-
-(defn dbg [x] (.log js/console x) x)
-(defn sdbg [x] (.log js/console (str x)) x)
 
 ;; regex
 (def nonnum "[a-zA-Z\\*\\+!\\-\\_\\?]")
@@ -77,7 +62,7 @@
 
 (defn drop-delim
   [x]
-  (filter #(-> %
+  (filterv #(-> %
                #{"" (str (char 30))}
                not)
           x))
@@ -92,23 +77,44 @@
 
 (defn tokenize-string
   [p]
-  (map (fn [x] (condp #(= % (count %2)) x
-                 0 nil
-                 1 [:om-text (first x)]
-                 2 [:om-text (-> x drop-delim first)]
-                 3 [:om-code (second x)]))
-       p))
+  (->> p
+       split-dbl-brackets
+       (map (fn [x] (condp #(= % (count %2)) x
+                      0 nil
+                      1 [:om-text (first x)]
+                      2 [:om-text (-> x drop-delim first)]
+                      3 [:om-code (second x)])))))
 
-(defn grab-om-attrs [a ks] (-> (apply dissoc a ks) (assoc :om-lette (select-keys a ks))))
+(defn grab-om-attrs
+  [a ks]
+  (println "=== grab-om-attrs =======")
+  (println [a ks])
+  (let [r (let [sel-ks (select-keys a ks)]
+            (if (not-empty sel-ks)
+              (-> a
+                  (#(apply dissoc % ks))
+                  (assoc :om-lette (select-keys a ks))))
+            a)]
+    (println r)
+    (println "=========")
+    r))
 
 (defn html->template
   [h]
-  (-> hick/parse-fragment
-      (map hick/as-hiccup)
+  (->> h
+       hick/parse-fragment
+       first
+       hick/as-hiccup
+       (walk/postwalk (fn [t] (cond (string? t) (tokenize-string t)
+                                    (like-html-vec? t) (update-in t [1] grab-om-attrs [:om-if :om-repeat])
+                                    :else t)))))
+
+#_(html->template "<div></div>")
+
+#_(-> "<div></div>"
+      hick/parse-fragment
       first
-      (walk/prewalk (cond (string? h) (tokenize-string h)
-                     (like-html-vec? h) (update-in h [1] grab-om-attrs)
-                     :else h))))
+      hick/as-hiccup)
 
 (defn process-html-struc
   [state html]
@@ -135,41 +141,3 @@
                           vec))
                   (f v)))
               ))))
-
-(defn process-template
-  [state html-string]
-  (sab/html (->> html-string
-                 hick/parse-fragment
-                 (map hick/as-hiccup)
-                 first
-                 (process-html-struc state)
-                )))
-
-
-
-
-
-
-(defn init []
-  (let [main (fn [state owner]
-               (reify om/IRender (render [this]
-                                   (->> (get @template-cache "hello.html") (process-template state)))))]
-    (om/root main app-state
-             {:target (.getElementById js/document "app")})))
-
-
-
-
-
-(load-templates ["hello.html"] init)
-
-(js/setTimeout #(swap! app-state update-in ["val1"] inc) 1000)
-(js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 2000)
-(js/setTimeout #(swap! app-state update-in ["show"] not) 1200)
-(js/setTimeout #(swap! app-state update-in ["val1"] inc) 3000)
-(js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 4000)
-(js/setTimeout #(swap! app-state update-in ["show"] not) 2400)
-(js/setTimeout #(swap! app-state update-in ["val1"] inc) 5000)
-(js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 6000)
-(js/setTimeout #(swap! app-state update-in ["show"] not) 3600)
-(js/setTimeout #(swap! app-state update-in ["show"] not) 4000)

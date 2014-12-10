@@ -4,7 +4,8 @@
             [om.dom :as dom :include-macros true]
             [ajax.core :refer [GET POST]]
             [sablono.core :as sab :refer-macros [html]]
-            [hickory.core :as hick]))
+            [hickory.core :as hick]
+            [clojure.string :as s]))
 
 (defonce app-state (atom {"val1" 1 "val2" 1 "show" true "vec" [1 2 3]}))
 
@@ -74,6 +75,41 @@
 (defn strip-attrs [tag & xattrs]
   (let [[name attrs & rest] tag] (vec (concat [name (apply dissoc attrs xattrs)] rest))))
 
+(defn drop-delim
+  [x]
+  (filter #(-> %
+               #{"" (str (char 30))}
+               not)
+          x))
+
+(defn split-dbl-brackets
+  [t]
+  (-> t
+      (s/replace "{{" (str (char 28) (char 29)))
+      (s/replace "}}" (str (char 29) (char 30) (char 28)))
+      (s/split (re-pattern (str (char 28))))
+      (#(map (fn [x] (s/split x (re-pattern (str (char 29))))) %))))
+
+(defn tokenize-string
+  [p]
+  (map (fn [x] (condp #(= % (count %2)) x
+                 0 nil
+                 1 [:om-text (first x)]
+                 2 [:om-text (-> x drop-delim first)]
+                 3 [:om-code (second x)]))
+       p))
+
+(defn grab-om-attrs [a ks] (-> (apply dissoc a ks) (assoc :om-lette (select-keys a ks))))
+
+(defn html->template
+  [h]
+  (-> hick/parse-fragment
+      (map hick/as-hiccup)
+      first
+      (walk/prewalk (cond (string? h) (tokenize-string h)
+                     (like-html-vec? h) (update-in h [1] grab-om-attrs)
+                     :else h))))
+
 (defn process-html-struc
   [state html]
   (->> html (walk/prewalk
@@ -120,6 +156,9 @@
                                    (->> (get @template-cache "hello.html") (process-template state)))))]
     (om/root main app-state
              {:target (.getElementById js/document "app")})))
+
+
+
 
 
 (load-templates ["hello.html"] init)

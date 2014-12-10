@@ -7,7 +7,7 @@ goog.require('clojure.zip');
 goog.require('clojure.zip');
 goog.require('hickory.utils');
 goog.require('hickory.utils');
-hickory.core.HiccupRepresentable = (function (){var obj9501 = {};return obj9501;
+hickory.core.HiccupRepresentable = (function (){var obj9550 = {};return obj9550;
 })();
 hickory.core.as_hiccup = (function as_hiccup(this$){if((function (){var and__3628__auto__ = this$;if(and__3628__auto__)
 {return this$.hickory$core$HiccupRepresentable$as_hiccup$arity$1;
@@ -29,7 +29,7 @@ hickory.core.as_hiccup = (function as_hiccup(this$){if((function (){var and__362
 })().call(null,this$);
 }
 });
-hickory.core.HickoryRepresentable = (function (){var obj9503 = {};return obj9503;
+hickory.core.HickoryRepresentable = (function (){var obj9552 = {};return obj9552;
 })();
 hickory.core.as_hickory = (function as_hickory(this$){if((function (){var and__3628__auto__ = this$;if(and__3628__auto__)
 {return this$.hickory$core$HickoryRepresentable$as_hickory$arity$1;
@@ -79,28 +79,28 @@ hickory.core.format_doctype = (function format_doctype(dt){var name = (dt["name"
 }
 });
 (hickory.core.HiccupRepresentable["object"] = true);
-(hickory.core.as_hiccup["object"] = (function (this$){var pred__9505 = cljs.core._EQ_;var expr__9506 = (this$["nodeType"]);if(cljs.core.truth_(pred__9505.call(null,hickory.core.Attribute,expr__9506)))
+(hickory.core.as_hiccup["object"] = (function (this$){var pred__9554 = cljs.core._EQ_;var expr__9555 = (this$["nodeType"]);if(cljs.core.truth_(pred__9554.call(null,hickory.core.Attribute,expr__9555)))
 {return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [hickory.utils.lower_case_keyword.call(null,(this$["name"])),(this$["value"])], null);
 } else
-{if(cljs.core.truth_(pred__9505.call(null,hickory.core.Comment,expr__9506)))
+{if(cljs.core.truth_(pred__9554.call(null,hickory.core.Comment,expr__9555)))
 {return ("<!--"+cljs.core.str.cljs$core$IFn$_invoke$arity$1((this$["data"]))+"-->");
 } else
-{if(cljs.core.truth_(pred__9505.call(null,hickory.core.Document,expr__9506)))
+{if(cljs.core.truth_(pred__9554.call(null,hickory.core.Document,expr__9555)))
 {return cljs.core.map.call(null,hickory.core.as_hiccup,(this$["childNodes"]));
 } else
-{if(cljs.core.truth_(pred__9505.call(null,hickory.core.DocumentType,expr__9506)))
+{if(cljs.core.truth_(pred__9554.call(null,hickory.core.DocumentType,expr__9555)))
 {return hickory.core.format_doctype.call(null,this$);
 } else
-{if(cljs.core.truth_(pred__9505.call(null,hickory.core.Element,expr__9506)))
-{var tag = hickory.utils.lower_case_keyword.call(null,(this$["tagName"]));return cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.concat.call(null,new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [tag,cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,hickory.core.as_hiccup,(this$["attributes"])))], null),(cljs.core.truth_(hickory.utils.unescapable_content.call(null,tag))?cljs.core.map.call(null,((function (tag,pred__9505,expr__9506){
-return (function (p1__9504_SHARP_){return (p1__9504_SHARP_["wholeText"]);
-});})(tag,pred__9505,expr__9506))
+{if(cljs.core.truth_(pred__9554.call(null,hickory.core.Element,expr__9555)))
+{var tag = hickory.utils.lower_case_keyword.call(null,(this$["tagName"]));return cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.concat.call(null,new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [tag,cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,hickory.core.as_hiccup,(this$["attributes"])))], null),(cljs.core.truth_(hickory.utils.unescapable_content.call(null,tag))?cljs.core.map.call(null,((function (tag,pred__9554,expr__9555){
+return (function (p1__9553_SHARP_){return (p1__9553_SHARP_["wholeText"]);
+});})(tag,pred__9554,expr__9555))
 ,(this$["childNodes"])):cljs.core.map.call(null,hickory.core.as_hiccup,(this$["childNodes"])))));
 } else
-{if(cljs.core.truth_(pred__9505.call(null,hickory.core.Text,expr__9506)))
+{if(cljs.core.truth_(pred__9554.call(null,hickory.core.Text,expr__9555)))
 {return hickory.utils.html_escape.call(null,(this$["wholeText"]));
 } else
-{throw (new Error(("No matching clause: "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(expr__9506))));
+{throw (new Error(("No matching clause: "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(expr__9555))));
 }
 }
 }
@@ -109,25 +109,25 @@ return (function (p1__9504_SHARP_){return (p1__9504_SHARP_["wholeText"]);
 }
 }));
 (hickory.core.HickoryRepresentable["object"] = true);
-(hickory.core.as_hickory["object"] = (function (this$){var pred__9508 = cljs.core._EQ_;var expr__9509 = (this$["nodeType"]);if(cljs.core.truth_(pred__9508.call(null,hickory.core.Attribute,expr__9509)))
+(hickory.core.as_hickory["object"] = (function (this$){var pred__9557 = cljs.core._EQ_;var expr__9558 = (this$["nodeType"]);if(cljs.core.truth_(pred__9557.call(null,hickory.core.Attribute,expr__9558)))
 {return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [hickory.utils.lower_case_keyword.call(null,(this$["name"])),(this$["value"])], null);
 } else
-{if(cljs.core.truth_(pred__9508.call(null,hickory.core.Comment,expr__9509)))
+{if(cljs.core.truth_(pred__9557.call(null,hickory.core.Comment,expr__9558)))
 {return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"comment","comment",532206069),new cljs.core.Keyword(null,"content","content",15833224),new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [(this$["data"])], null)], null);
 } else
-{if(cljs.core.truth_(pred__9508.call(null,hickory.core.Document,expr__9509)))
+{if(cljs.core.truth_(pred__9557.call(null,hickory.core.Document,expr__9558)))
 {return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"document","document",-1329188687),new cljs.core.Keyword(null,"content","content",15833224),cljs.core.not_empty.call(null,cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.map.call(null,hickory.core.as_hickory,(this$["childNodes"]))))], null);
 } else
-{if(cljs.core.truth_(pred__9508.call(null,hickory.core.DocumentType,expr__9509)))
+{if(cljs.core.truth_(pred__9557.call(null,hickory.core.DocumentType,expr__9558)))
 {return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"document-type","document-type",-1309437776),new cljs.core.Keyword(null,"attrs","attrs",-2090668713),new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"name","name",1843675177),(this$["name"]),new cljs.core.Keyword(null,"publicid","publicid",1557995850),(this$["publicId"]),new cljs.core.Keyword(null,"systemid","systemid",-2052878192),(this$["systemId"])], null)], null);
 } else
-{if(cljs.core.truth_(pred__9508.call(null,hickory.core.Element,expr__9509)))
+{if(cljs.core.truth_(pred__9557.call(null,hickory.core.Element,expr__9558)))
 {return new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"type","type",1174270348),new cljs.core.Keyword(null,"element","element",1974019749),new cljs.core.Keyword(null,"attrs","attrs",-2090668713),cljs.core.not_empty.call(null,cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,hickory.core.as_hickory,(this$["attributes"])))),new cljs.core.Keyword(null,"tag","tag",-1290361223),hickory.utils.lower_case_keyword.call(null,(this$["tagName"])),new cljs.core.Keyword(null,"content","content",15833224),cljs.core.not_empty.call(null,cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.map.call(null,hickory.core.as_hickory,(this$["childNodes"]))))], null);
 } else
-{if(cljs.core.truth_(pred__9508.call(null,hickory.core.Text,expr__9509)))
+{if(cljs.core.truth_(pred__9557.call(null,hickory.core.Text,expr__9558)))
 {return (this$["wholeText"]);
 } else
-{throw (new Error(("No matching clause: "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(expr__9509))));
+{throw (new Error(("No matching clause: "+cljs.core.str.cljs$core$IFn$_invoke$arity$1(expr__9558))));
 }
 }
 }
@@ -161,9 +161,9 @@ hickory.core.parse_dom_with_write = (function parse_dom_with_write(s){var doc = 
 {} else
 {hickory.core.remove_el.call(null,doctype_el);
 }
-var temp__4126__auto___9511 = cljs.core.first.call(null,(doc["head"]["childNodes"]));if(cljs.core.truth_(temp__4126__auto___9511))
-{var title_el_9512 = temp__4126__auto___9511;if(cljs.core.empty_QMARK_.call(null,(title_el_9512["text"])))
-{hickory.core.remove_el.call(null,title_el_9512);
+var temp__4126__auto___9560 = cljs.core.first.call(null,(doc["head"]["childNodes"]));if(cljs.core.truth_(temp__4126__auto___9560))
+{var title_el_9561 = temp__4126__auto___9560;if(cljs.core.empty_QMARK_.call(null,(title_el_9561["text"])))
+{hickory.core.remove_el.call(null,title_el_9561);
 } else
 {}
 } else
