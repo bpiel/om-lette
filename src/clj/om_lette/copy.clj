@@ -93,8 +93,8 @@
             (if (not-empty sel-ks)
               (-> a
                   (#(apply dissoc % ks))
-                  (assoc :om-lette (select-keys a ks))))
-            a)]
+                  (assoc :om-lette (select-keys a ks)))
+              a))]
     (println r)
     (println "=========")
     r))
