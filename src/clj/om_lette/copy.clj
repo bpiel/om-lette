@@ -83,7 +83,8 @@
                       0 nil
                       1 [:om-text (first x)]
                       2 [:om-text (-> x drop-delim first)]
-                      3 [:om-code (second x)])))))
+                      3 [:om-code (second x)])))
+       (filter #(-> % second not-empty))))
 
 (defn grab-om-attrs
   [a ks]
@@ -109,7 +110,7 @@
                                     (like-html-vec? t) (update-in t [1] grab-om-attrs [:om-if :om-repeat])
                                     :else t)))))
 
-#_(html->template "<div></div>")
+#_(html->template "<div om-repeat='{{a}}'></div>")
 
 #_(-> "<div></div>"
       hick/parse-fragment
