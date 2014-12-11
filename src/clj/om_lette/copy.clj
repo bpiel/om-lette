@@ -1,9 +1,7 @@
-(ns om-lette.copy
+0(ns om-lette.copy
   (:require [clojure.walk :as walk]
             [hickory.core :as hick]
             [clojure.string :as s]))
-
-(defonce app-state (atom {"val1" 1 "val2" 1 "show" true "vec" [1 2 3]}))
 
 (defonce template-cache (atom {}))
 
@@ -19,6 +17,18 @@
   (fn handler [response]
     (swap! template-cache assoc template-name response)
     (callback)))
+
+(defn getTemplate [name handler]
+  (GET (str "/js/templates/" name) {:handler handler}))
+
+(defn load-templates [names callback]
+  (mapv #(->> (make-done-loading?-fn names)
+              (fn [callback]
+                (swap! template-cache assoc template-name
+                       (html->template html))
+                (if (has-all-keys? @template-cache names)
+                  callback))
+              (getTemplate %)) names))
 
 ;; regex
 (def nonnum "[a-zA-Z\\*\\+!\\-\\_\\?]")
@@ -49,13 +59,6 @@
        rest
        not-empty
        ))
-
-(defn cont-pass
-  [& fns]
-  (fn [v] (if (not-empty fns)
-           ((first fns) v
-            (->> fns rest (apply cont-pass)))
-           v)))
 
 (defn strip-attrs [tag & xattrs]
   (let [[name attrs & rest] tag] (vec (concat [name (apply dissoc attrs xattrs)] rest))))
@@ -110,35 +113,8 @@
                                     (like-html-vec? t) (update-in t [1] grab-om-attrs [:om-if :om-repeat])
                                     :else t)))))
 
+(defn render-template
+  [state tname]
+  )
+
 #_(html->template "<div om-repeat='{{a}}'></div>")
-
-#_(-> "<div></div>"
-      hick/parse-fragment
-      first
-      hick/as-hiccup)
-
-(defn process-html-struc
-  [state html]
-  (->> html (walk/prewalk
-             (cont-pass
-              (fn [v f]
-                (if (string? v)
-                  (clojure.string/replace v
-                                          #"\{\{(.*?)\}\}"
-                                          (fn [_ b] (get state b "")))
-                  (f v)))
-              (fn [v f]
-                (if-let [ifx (has-om-if? v)]
-                  (if (get state ifx)
-                    (f v)))
-                (f v))
-              (fn [v f]
-                (if-let [[lst kw] (has-om-repeat? v)]
-                  (f (->> lst
-                          (get state)
-                          (mapv #(process-html-struc (assoc state kw %)
-                                                     (strip-attrs v :om-repeat)))
-                          (concat [:div {:data-om "bill"}]) ;; what should go here?
-                          vec))
-                  (f v)))
-              ))))
