@@ -11,7 +11,7 @@
 
   :plugins [[lein-cljsbuild "1.0.3"]
             [lein-ring "0.8.13"]
-            [cider/cider-nrepl "0.7.0"]]
+            [cider/cider-nrepl "0.8.1"]]
 
   :hooks [leiningen.cljsbuild]
 
