@@ -27,10 +27,11 @@
     h
     nil))
 
-(defn has-om-if? [h] (-> h like-html-vec? second :om-lette :om-if))
-(defn has-om-repeat? [h] (-> h like-html-vec? second :om-lette :om-repeat))
-(defn is-om-text? [h] (and (vector? h) (= (first h) :om-text)))
-(defn is-om-code? [h] (and (vector? h) (= (first h) :om-code)))
+(defn has-om-lette? [h kw] (if-let [v (-> h like-html-vec? second :om-lette kw)] [h v] nil))
+(defn has-om-if? [h] (has-om-lette? h :om-if))
+(defn has-om-repeat? [h] (has-om-lette? h :om-repeat))
+(defn is-om-text? [h] (and (vector? h) (= (first h) :om-text) (second h)))
+(defn is-om-code? [h] (and (vector? h) (= (first h) :om-code) (second h)))
 
 (defn strip-attrs [tag & xattrs]
   (let [[name attrs & rest] tag] (vec (concat [name (apply dissoc attrs xattrs)] rest))))
@@ -68,12 +69,12 @@
   [p]
   (->> p
        split-dbl-brackets
-       (map (fn [x] (condp #(= % (count %2)) x
-                      0 nil
-                      1 [:om-text (first x)]
-                      2 [:om-text (-> x drop-delim first)]
-                      3 [:om-code (second x)])))
-       (filter #(-> % second not-empty))))
+       (mapv (fn [x] (condp #(= % (count %2)) x
+                       0 nil
+                       1 [:om-text (first x)]
+                       2 [:om-text (-> x drop-delim first)]
+                       3 [:om-code (second x)])))
+       (filterv #(-> % second not-empty))))
 
 (defn grab-om-attrs
   [a ks]
@@ -84,6 +85,10 @@
                   (assoc :om-lette (select-keys a ks)))
               a))]
     r))
+
+(defn eval-om-if-expr
+  [x state]
+  (get state (apply str (mapcat second x))))
 
 (defn html->template
   [h]
@@ -105,20 +110,30 @@
               (get-html-template %))
         names))
 
+(defn processors
+  [state]
+  [[is-om-text? identity]
+   [is-om-code? #(get state % "")]
+   [has-om-if? (fn [[h ifx]]
+                 (if (eval-om-if-expr ifx state)
+                   h
+                   nil))]])
+
 (defn template->hiccup
   [tmplt state]
-  (walk/prewalk (fn [x]
-                  (cond (is-om-text? x) (second x)
-                        (is-om-code? x) (get state (second x) "")
-                        (has-om-if? x) (if (get state (second x))
-                                         x
-                                         nil)
-                        :else x))
+  (walk/prewalk (fn [h]
+                  (reduce (fn [current [pred proc-fn]]
+                            (if-let [r (pred current)]
+                              (proc-fn r)
+                              current))
+                          h
+                          (processors state)))
                 tmplt))
 
 (defn cached-template->hiccup
   [tname state]
-  (template->hiccup (get @template-cache tname) state))
+  (let [r (template->hiccup (get @template-cache tname) state)]
+    r))
 
 #_ (-> "<div>{{a}}</div" html->template (template->hiccup {"a" 33}))
 
