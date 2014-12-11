@@ -79,16 +79,12 @@
 
 (defn grab-om-attrs
   [a ks]
-  (println "=== grab-om-attrs =======")
-  (println [a ks])
   (let [r (let [sel-ks (select-keys a ks)]
             (if (not-empty sel-ks)
               (-> a
                   (#(apply dissoc % ks))
                   (assoc :om-lette (select-keys a ks)))
               a))]
-    (println r)
-    (println "=========")
     r))
 
 (defn html->template
@@ -101,18 +97,20 @@
                                     (like-html-vec? t) (update-in t [1] grab-om-attrs [:om-if :om-repeat])
                                     :else t)))))
 
-
 (defn load-templates [names get-html-template callback]
-  (mapv #(->> (make-done-loading?-fn names)
-              (fn [callback]
-                (swap! template-cache assoc name
-                       (html->template html))
+  (mapv #(->> (fn [response]
+                (swap! template-cache assoc %
+                       (html->template response))
+                (println @template-cache)
                 (if (has-all-keys? @template-cache names)
-                  callback))
-              (get-html-template %) names)))
+                  (callback)))
+              (get-html-template %))
+        names))
 
-(defn render-template
-  [state tname]
-  )
+
 
 #_(html->template "<div om-repeat='{{a}}'></div>")
+
+#_(load-templates ["hello.html"]
+                  (fn [n h] (println "in get-html-template") (h "<div></div"))
+                  (fn [] (println "callback!")))

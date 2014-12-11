@@ -8,6 +8,11 @@
             [clojure.string :as s]
             [om-lette.copy :refer [load-templates html->template]]))
 
+(defn get-html-template [name handler]
+  (GET (str "/js/templates/" name) {:handler handler}))
+
+;; LIB ENDS HERE
+
 (defonce app-state (atom {"val1" 1 "val2" 1 "show" true "vec" [1 2 3]}))
 
 (defn init []
