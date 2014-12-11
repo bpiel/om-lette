@@ -6,10 +6,14 @@
             [sablono.core :as sab :refer-macros [html]]
             [hickory.core :as hick]
             [clojure.string :as s]
-            [om-lette.copy :refer [load-templates html->template]]))
+            [om-lette.templater :refer [load-templates cached-template->hiccup]]))
 
 (defn get-html-template [name handler]
   (GET (str "/js/templates/" name) {:handler handler}))
+
+(defn render-template
+  [tname state]
+  (sab/html (cached-template->hiccup tname state)))
 
 ;; LIB ENDS HERE
 
@@ -18,11 +22,11 @@
 (defn init []
   (let [main (fn [state owner]
                (reify om/IRender (render [this]
-                                   (->> (get @template-cache "hello.html") (process-template state)))))]
+                                   (render-template "hello.html" state))))]
     (om/root main app-state
-             {:target (.getElementById js/document "")})))
+             {:target (.getElementById js/document "app")})))
 
-(load-templates ["hello.html"] init)
+(load-templates ["hello.html"] get-html-template init)
 
 (js/setTimeout #(swap! app-state update-in ["val1"] inc) 1000)
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 2000)

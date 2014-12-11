@@ -27,21 +27,10 @@
     h
     nil))
 
-(defn has-om-if?
-  [h]
-  (-> h like-html-vec? second :om-if))
-
-(defn has-om-repeat?
-  [h]
-  (->> h
-       like-html-vec?
-       second
-       :om-repeat
-       (#(or % ""))
-       (re-find (re-pattern om-repeat-expr))
-       rest
-       not-empty
-       ))
+(defn has-om-if? [h] (-> h like-html-vec? second :om-lette :om-if))
+(defn has-om-repeat? [h] (-> h like-html-vec? second :om-lette :om-repeat))
+(defn is-om-text? [h] (and (vector? h) (= (first h) :om-text)))
+(defn is-om-code? [h] (and (vector? h) (= (first h) :om-code)))
 
 (defn strip-attrs [tag & xattrs]
   (let [[name attrs & rest] tag] (vec (concat [name (apply dissoc attrs xattrs)] rest))))
@@ -111,7 +100,6 @@
   (mapv #(->> (fn [response]
                 (swap! template-cache assoc %
                        (html->template response))
-                (println @template-cache)
                 (if (has-all-keys? @template-cache names)
                   (callback)))
               (get-html-template %))
@@ -120,10 +108,17 @@
 (defn template->hiccup
   [tmplt state]
   (walk/prewalk (fn [x]
-                  (cond (and (vector? x)
-                             (= (first x) :om-code)) (get state (second x) "")
+                  (cond (is-om-text? x) (second x)
+                        (is-om-code? x) (get state (second x) "")
+                        (has-om-if? x) (if (get state (second x))
+                                         x
+                                         nil)
                         :else x))
                 tmplt))
+
+(defn cached-template->hiccup
+  [tname state]
+  (template->hiccup (get @template-cache tname) state))
 
 #_ (-> "<div>{{a}}</div" html->template (template->hiccup {"a" 33}))
 
