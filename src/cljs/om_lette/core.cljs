@@ -13,11 +13,12 @@
 
 (defn render-template
   [tname state]
-  (sab/html (cached-template->hiccup tname state)))
+  (sab/html  (cached-template->hiccup tname state)))
+
 
 ;; LIB ENDS HERE
 
-(defonce app-state (atom {"val1" 1 "val2" 1 "show" true "vec" [1 2 3]}))
+(defonce app-state (atom {"val1" 1 "val2" 1 "show" true "vec" ["hi" 1 2 3]}))
 
 (defn init []
   (let [main (fn [state owner]
@@ -32,9 +33,11 @@
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 2000)
 (js/setTimeout #(swap! app-state update-in ["show"] not) 1200)
 (js/setTimeout #(swap! app-state update-in ["val1"] inc) 3000)
+(js/setTimeout #(swap! app-state update-in ["vec"] conj "a") 3200)
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 4000)
 (js/setTimeout #(swap! app-state update-in ["show"] not) 2400)
 (js/setTimeout #(swap! app-state update-in ["val1"] inc) 5000)
+(js/setTimeout #(swap! app-state update-in ["vec"] conj "b") 5500)
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 6000)
 (js/setTimeout #(swap! app-state update-in ["show"] not) 3600)
 (js/setTimeout #(swap! app-state update-in ["show"] not) 4000)

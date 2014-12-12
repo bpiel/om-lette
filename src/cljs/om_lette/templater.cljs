@@ -90,6 +90,13 @@
   [x state]
   (get state (apply str (mapcat second x))))
 
+(defn eval-om-repeat-expr
+  [x state]
+  (let [expr (apply str (mapcat second x))
+        [_ source-key dest] (-> om-repeat-expr re-pattern (re-find expr))
+        source (get state source-key)]
+    (map #(assoc state dest %) source)))
+
 (defn html->template
   [h]
   (->> h
@@ -110,6 +117,8 @@
               (get-html-template %))
         names))
 
+(def template->hiccup)
+
 (defn processors
   [state]
   [[is-om-text? identity]
@@ -117,18 +126,26 @@
    [has-om-if? (fn [[h ifx]]
                  (if (eval-om-if-expr ifx state)
                    h
-                   nil))]])
+                   nil))]
+   [has-om-repeat? (fn [[h repx]]
+                     (mapv #(template->hiccup (update-in h
+                                                         [1 :om-lette]
+                                                         dissoc
+                                                         :om-repeat)
+                                              %)
+                          (eval-om-repeat-expr repx state)))]])
 
 (defn template->hiccup
   [tmplt state]
-  (walk/prewalk (fn [h]
-                  (reduce (fn [current [pred proc-fn]]
-                            (if-let [r (pred current)]
-                              (proc-fn r)
-                              current))
-                          h
-                          (processors state)))
-                tmplt))
+  (->> tmplt
+       (walk/prewalk (fn [h]
+                       (reduce (fn [current [pred proc-fn]]
+                                 (if-let [r (pred current)]
+                                   (proc-fn r)
+                                   current))
+                               h
+                               (processors state))))
+       (walk/postwalk flatten-out)))
 
 (defn cached-template->hiccup
   [tname state]
