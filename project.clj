@@ -18,11 +18,10 @@
   :source-paths ["src/clj"]
 
   :cljsbuild {:builds {:main {:source-paths ["src/cljs"]
-                              :compiler {:output-to "resources/public/js/core.js"
-                                         :output-dir "resources/public/js"
-                                         :source-map "resources/public/js/core.js.map"
-                                         :optimizations :whitespace
-                                         }}}}
+                              :compiler {:output-to "resources/public/js/compiled/core.js"
+                                         :output-dir "resources/public/js/compiled"
+                                         :source-map "resources/public/js/compiled/core.js.map"
+                                         :optimizations :whitespace}}}}
 
   :main om-lette.server
   :ring {:handler om-lette.server/app})
