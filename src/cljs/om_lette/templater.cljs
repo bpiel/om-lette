@@ -17,7 +17,6 @@
 (def nonnum "[a-zA-Z\\*\\+!\\-\\_\\?]")
 (def valid-sym-chars "[\\w\\d\\*\\+!\\-\\_\\?]")
 (def valid-sym (str nonnum "+" valid-sym-chars "*"))
-(def om-repeat-expr (str "^=>\\s+(" valid-sym ")\\s+(" valid-sym ")\\s*$"))
 
 ;; *******
 
@@ -65,6 +64,17 @@
       (s/split (re-pattern (str (char 28))))
       (#(map (fn [x] (s/split x (re-pattern (str (char 29))))) %))))
 
+(defn parse-code
+  [s]
+  (.parse js/parser s))
+
+(defn eval-parsed-code
+  [p-js state]
+  (let [p (js->clj p-js)]
+    (if (vector? p)
+      (apply (get-in state [:fns (first p)]) (rest p))
+      p)))
+
 (defn tokenize-string
   [p]
   (->> p
@@ -90,12 +100,7 @@
   [x state]
   (get state (apply str (mapcat second x))))
 
-(defn eval-om-repeat-expr
-  [x state]
-  (let [expr (apply str (mapcat second x))
-        [_ source-key dest] (-> om-repeat-expr re-pattern (re-find expr))
-        source (get state source-key)]
-    (map #(assoc state dest %) source)))
+
 
 (defn html->template
   [h]
@@ -133,19 +138,25 @@
                                                          dissoc
                                                          :om-repeat)
                                               %)
-                          (eval-om-repeat-expr repx state)))]])
+                           (-> repx first second parse-code (eval-parsed-code state))))]])
 
 (defn template->hiccup
   [tmplt state]
-  (->> tmplt
-       (walk/prewalk (fn [h]
-                       (reduce (fn [current [pred proc-fn]]
-                                 (if-let [r (pred current)]
-                                   (proc-fn r)
-                                   current))
-                               h
-                               (processors state))))
-       (walk/postwalk flatten-out)))
+  (let [s (update-in state
+                     [:fns]
+                     (fn [fns] (merge {"=>" (fn [source dest]
+                                               (map #(assoc state dest %)
+                                                    (get state source))) }
+                                       fns)))]
+    (->> tmplt
+         (walk/prewalk (fn [h]
+                         (reduce (fn [current [pred proc-fn]]
+                                   (if-let [r (pred current)]
+                                     (proc-fn r)
+                                     current))
+                                 h
+                                 (processors s))))
+         (walk/postwalk flatten-out))))
 
 (defn cached-template->hiccup
   [tname state]
