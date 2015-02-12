@@ -1,6 +1,7 @@
 <div>
+{{(x 4)}}
 val1: {{val1}}
 val2: {{val2}}
 <div om-if='show'>Nested val1: {{val1}}</div>
-<div om-repeat="=> vec v">{{v}}</div>
+<div om-repeat="=> vec v">{{v}} - {{val1}}</div>
 </div>

@@ -12,9 +12,9 @@
   (GET (str "/js/templates/" name) {:handler handler}))
 
 (defn render-template
-  [tname state]
-  (sab/html  (cached-template->hiccup tname state)))
-
+  [tname state & {:keys [fns]}]
+  (sab/html  (cached-template->hiccup tname
+                                      (assoc state :fns fns))))
 
 ;; LIB ENDS HERE
 
