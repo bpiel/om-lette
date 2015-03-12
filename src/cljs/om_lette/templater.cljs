@@ -68,12 +68,37 @@
   [s]
   (.parse js/parser s))
 
+(defn dbg
+  [l v]
+  (.log js/console l)
+  (.log js/console (JSON/stringify v))
+  v)
+
 (defn eval-parsed-code
-  [p-js state]
-  (let [p (js->clj p-js)]
-    (if (vector? p)
-      (apply (get-in state [:fns (first p)]) (rest p))
-      p)))
+  [pjs state]
+  (.log js/console "********")
+  (.log js/console (get-in state [:fns "resolve-symbol"]))
+  (eval-parsed-cljs-code (js->clj pjs)
+                         state))
+
+(defn eval-parsed-cljs-code
+  [c state]
+
+  (.log js/console "eval-parsed-cljs-code IN:")
+  (.log js/console c)
+  (if (= c "resolve-symbol")
+    (.log js/console "IS RESOLVE-SYMBOL")
+    (.log js/console "not resolve-symbol"))
+  (dbg (str c " --> return: ") (if (vector? c)
+                                 (apply (dbg (str "### " (get-in state [:fns "resolve-symbol"]) " *** " (JSON/stringify c)  "--> apply func:")
+                                             (let [func (first c)]
+                                               (if (fn? func)
+                                                 func
+                                                 (get-in state
+                                                         [:fns (dbg "get-in " (eval-parsed-cljs-code func state))]))))
+                                        (mapv #(eval-parsed-cljs-code % state)
+                                              (rest c)))
+                                 c)))
 
 (defn tokenize-string
   [p]
@@ -85,6 +110,9 @@
                        2 [:om-text (-> x drop-delim first)]
                        3 [:om-code (second x)])))
        (filterv #(-> % second not-empty))))
+
+#_(tokenize-string "{{(a)}}")
+#_(split-dbl-brackets "{{(a)}}")
 
 (defn grab-om-attrs
   [a ks]
@@ -127,7 +155,7 @@
 (defn processors
   [state]
   [[is-om-text? identity]
-   [is-om-code? #(get state % "")]
+   [is-om-code? #(eval-parsed-code (-> % parse-code last) state) #_ #(get state % "")]
    [has-om-if? (fn [[h ifx]]
                  (if (eval-om-if-expr ifx state)
                    h
@@ -146,7 +174,13 @@
                      [:fns]
                      (fn [fns] (merge {"=>" (fn [source dest]
                                                (map #(assoc state dest %)
-                                                    (get state source))) }
+                                                    (get state source)))
+                                       "identity" identity
+                                       "vector" vector
+                                       "hashmap" hash-map
+                                       "set" set
+                                       "resolve-symbol" #(or (get-in state [:fns %])
+                                                             (get state % "[empty]"))}
                                        fns)))]
     (->> tmplt
          (walk/prewalk (fn [h]

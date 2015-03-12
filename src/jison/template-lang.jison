@@ -49,9 +49,9 @@ sexpressions:     sexpression              { $$ = [$1]; }
   ;
 
 sexpression:  list                         { $$ = $list; }
-  |           vector                       { $$ = ['vector', $vector]; }
-  |           hashmap                      { $$ = ['hashmap', $hashmap]; }
-  |           set                          { $$ = ['set', $set]; }
+  |           vector                       { $vector.unshift('vector'); $$ = $vector; }
+  |           hashmap                      { $hashmap.unshift('hashmap'); $$ = $hashmap; }
+  |           set                          { $hashmap.unshift('set'); $$ = $set; }
   |           atom                         { $$ = $atom; }
   ;
 
@@ -79,6 +79,7 @@ element:      sexpression                  { $$ = $1; }
   ;
 
 atom:         symbol
+  |           keyword
   |           literal
   ;
 
@@ -90,8 +91,7 @@ literal:      STRING
 keyword:      ':' IDENTIFIER               { $$ = ['keyword', $2]; }
 ;
 
-symbol:       IDENTIFIER                   { $$ = $1; }
-  |           keyword                      { $$ = $1; }
+symbol:       IDENTIFIER                   { $$ = ['resolve-symbol', $1]; }
   ;
 
 %%

@@ -23,7 +23,9 @@
 (defn init []
   (let [main (fn [state owner]
                (reify om/IRender (render [this]
-                                   (render-template "hello.html" state))))]
+                                   (render-template "hello.html"
+                                                    state
+                                                    :fns {"x" inc}))))]
     (om/root main app-state
              {:target (.getElementById js/document "app")})))
 
