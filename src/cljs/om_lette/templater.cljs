@@ -3,6 +3,26 @@
             [hickory.core :as hick]
             [clojure.string :as s]))
 
+(defn dbg
+  [l v]
+  (.log js/console l)
+  (.log js/console (JSON/stringify v))
+  v)
+
+(defn dbg->
+  [v l]
+  (dbg l v))
+
+(defn dbg2
+  [l v]
+  (.log js/console l)
+  (.log js/console v)
+  v)
+
+(defn dbg2->
+  [v l]
+  (dbg2 l v))
+
 (defonce template-cache (atom {}))
 
 (defn has-all-keys? [m keys]
@@ -68,51 +88,24 @@
   [s]
   (.parse js/parser s))
 
-(defn dbg
-  [l v]
-  (.log js/console l)
-  (.log js/console (JSON/stringify v))
-  v)
-
-(defn dbg2
-  [l v]
-  (.log js/console l)
-  (.log js/console v)
-  v)
 
 (defn eval-parsed-code
   [pjs state]
-  (.log js/console "********")
-  (.log js/console (get-in state [:fns "resolve-symbol"]))
-  (let [f "resolve-symbol"]
-    (.log js/console (get-in state [:fns f]))  )
   (eval-parsed-cljs-code (js->clj pjs)
                          state))
 
 (defn eval-parsed-cljs-code
   [c state]
-
-  (.log js/console "eval-parsed-cljs-code IN:")
-  (.log js/console c)
-
-  (dbg2 (str "call: " c " --> return: ") (if (vector? c)
-                                           (apply (dbg2 (str "*** " (JSON/stringify c)  "--> apply func:")
-                                                        (let [func (first c)
-                                                              eval-func (eval-parsed-cljs-code func state)]
-                                                          (if (fn? eval-func)
-                                                            eval-func
-                                                            (do
-                                                              (.log js/console (if (= func "resolve-symbol")
-                                                                                 "IS RESOLVE-SYMBOL"
-                                                                                 "not resolve-symbol"))
-                                                              (dbg "eval-func = " eval-func)
-                                                              (dbg2 "state = " state)
-                                                              (dbg2 "get-in :fns" (get-in state [:fns]))
-                                                              (dbg2 "get-in" (get-in state
-                                                                                     [:fns (dbg2 "get-in :fns, " eval-func)]))))))
-                                                  (mapv #(eval-parsed-cljs-code % state)
-                                                        (rest c)))
-                                           c)))
+  (cond (= c "$") state
+        (vector? c) (apply (let [func (first c)
+                                 eval-func (eval-parsed-cljs-code func state)]
+                             (if (fn? eval-func)
+                               eval-func
+                               (get-in state
+                                       [:fns eval-func])))
+                           (mapv #(eval-parsed-cljs-code % state)
+                                 (rest c)))
+        :default c))
 
 (defn tokenize-string
   [p]
@@ -180,22 +173,26 @@
                                                          dissoc
                                                          :om-repeat)
                                               %)
-                           (-> repx first second parse-code (eval-parsed-code state))))]])
+                           (-> repx
+                               first
+                               second
+                               parse-code
+                               (eval-parsed-code state))))]])
 
 (defn template->hiccup
   [tmplt state]
   (let [s (update-in state
                      [:fns]
                      (fn [fns] (merge {"=>" (fn [source dest]
-                                               (map #(assoc state dest %)
-                                                    (get state source)))
+                                              (mapv #(assoc state dest %)
+                                                   source))
                                        "identity" identity
                                        "vector" vector
                                        "hashmap" hash-map
                                        "set" set
-                                       "resolve-symbol" #(or (get-in state [:fns %])
-                                                             (get state % "[empty]"))}
-                                       fns)))]
+                                       "resolve-symbol" #(or (get-in % [:fns %2])
+                                                             (get % %2 "[empty]"))}
+                                      fns)))]
     (->> tmplt
          (walk/prewalk (fn [h]
                          (reduce (fn [current [pred proc-fn]]

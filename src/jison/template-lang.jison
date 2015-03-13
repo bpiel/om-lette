@@ -14,7 +14,7 @@
 
 [-+]?[0-9]+((\.[0-9]*[eE][-+]?[0-9]+)|(\.[0-9]*)|([eE][-+]?[0-9]+))     {return 'FLOAT';}
 [-+]?([1-9][0-9]+|[0-9])             {return 'INTEGER';}
-\"([^\"\\]|\\[\'\"\\bfnrt])*\"              {return 'STRING';}
+\"(([^\"\\]|\\[\'\"\\bfnrt])*)\"              {return 'STRING';}
 [a-zA-Z*+!\-_=<>?/][0-9a-zA-Z*+!\-_=<>?/]*    {return 'IDENTIFIER';}
 
 [\s,]+                 {/*return 'SPACE';*/}
@@ -83,7 +83,7 @@ atom:         symbol
   |           literal
   ;
 
-literal:      STRING
+literal:      STRING                       { $$ = $1.match(/^"(.+)"$/)[1]; }
   |           INTEGER                      { $$ = parseInt($1); }
   |           FLOAT                        { $$ = parseFloat($1); }
   ;
