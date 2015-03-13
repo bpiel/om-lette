@@ -91,7 +91,7 @@ literal:      STRING
 keyword:      ':' IDENTIFIER               { $$ = ['keyword', $2]; }
 ;
 
-symbol:       IDENTIFIER                   { $$ = ['resolve-symbol', $1]; }
+symbol:       IDENTIFIER                   { $$ = ['resolve-symbol', '$', $1]; }
   ;
 
 %%

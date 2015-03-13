@@ -74,10 +74,18 @@
   (.log js/console (JSON/stringify v))
   v)
 
+(defn dbg2
+  [l v]
+  (.log js/console l)
+  (.log js/console v)
+  v)
+
 (defn eval-parsed-code
   [pjs state]
   (.log js/console "********")
   (.log js/console (get-in state [:fns "resolve-symbol"]))
+  (let [f "resolve-symbol"]
+    (.log js/console (get-in state [:fns f]))  )
   (eval-parsed-cljs-code (js->clj pjs)
                          state))
 
@@ -86,19 +94,25 @@
 
   (.log js/console "eval-parsed-cljs-code IN:")
   (.log js/console c)
-  (if (= c "resolve-symbol")
-    (.log js/console "IS RESOLVE-SYMBOL")
-    (.log js/console "not resolve-symbol"))
-  (dbg (str c " --> return: ") (if (vector? c)
-                                 (apply (dbg (str "### " (get-in state [:fns "resolve-symbol"]) " *** " (JSON/stringify c)  "--> apply func:")
-                                             (let [func (first c)]
-                                               (if (fn? func)
-                                                 func
-                                                 (get-in state
-                                                         [:fns (dbg "get-in " (eval-parsed-cljs-code func state))]))))
-                                        (mapv #(eval-parsed-cljs-code % state)
-                                              (rest c)))
-                                 c)))
+
+  (dbg2 (str "call: " c " --> return: ") (if (vector? c)
+                                           (apply (dbg2 (str "*** " (JSON/stringify c)  "--> apply func:")
+                                                        (let [func (first c)
+                                                              eval-func (eval-parsed-cljs-code func state)]
+                                                          (if (fn? eval-func)
+                                                            eval-func
+                                                            (do
+                                                              (.log js/console (if (= func "resolve-symbol")
+                                                                                 "IS RESOLVE-SYMBOL"
+                                                                                 "not resolve-symbol"))
+                                                              (dbg "eval-func = " eval-func)
+                                                              (dbg2 "state = " state)
+                                                              (dbg2 "get-in :fns" (get-in state [:fns]))
+                                                              (dbg2 "get-in" (get-in state
+                                                                                     [:fns (dbg2 "get-in :fns, " eval-func)]))))))
+                                                  (mapv #(eval-parsed-cljs-code % state)
+                                                        (rest c)))
+                                           c)))
 
 (defn tokenize-string
   [p]

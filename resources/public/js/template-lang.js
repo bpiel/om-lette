@@ -120,7 +120,7 @@ case 26:
  this.$ = ['keyword', $$[$0]]; 
 break;
 case 27:
- this.$ = ['resolve-symbol', $$[$0]]; 
+ this.$ = ['resolve-symbol', '$', $$[$0]]; 
 break;
 }
 },
