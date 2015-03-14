@@ -89,11 +89,6 @@
   (.parse js/parser s))
 
 
-(defn eval-parsed-code
-  [pjs state]
-  (eval-parsed-cljs-code (js->clj pjs)
-                         state))
-
 (defn eval-parsed-cljs-code
   [c state]
   (cond (= c "$") state
@@ -106,6 +101,11 @@
                            (mapv #(eval-parsed-cljs-code % state)
                                  (rest c)))
         :default c))
+
+(defn eval-parsed-code
+  [pjs state]
+  (eval-parsed-cljs-code (js->clj pjs)
+                         state))
 
 (defn tokenize-string
   [p]
@@ -144,7 +144,9 @@
        first
        hick/as-hiccup
        (walk/postwalk (fn [t] (cond (string? t) (tokenize-string t)
-                                    (like-html-vec? t) (update-in t [1] grab-om-attrs [:om-if :om-repeat])
+                                    (like-html-vec? t) (-> t
+                                                           (update-in [1] grab-om-attrs [:om-if :om-repeat])
+                                                           (assoc-in [1 :on-click] #(.log js/console %)))
                                     :else t)))
        (walk/postwalk flatten-out)))
 
