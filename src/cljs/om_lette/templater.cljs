@@ -1,6 +1,7 @@
 (ns om-lette.templater
   (:require [clojure.walk :as walk]
             [hickory.core :as hick]
+            [sablono.core :as sab :refer-macros [html]]
             [clojure.string :as s]))
 
 (defn dbg
@@ -24,6 +25,11 @@
   (dbg2 l v))
 
 (defonce template-cache (atom {}))
+
+(defn render-template
+  [tname state & {:keys [fns]}]
+  (sab/html  (cached-template->hiccup tname
+                                      (assoc state :fns fns))))
 
 (defn has-all-keys? [m keys]
   (apply = (map count [keys (select-keys m keys)])))

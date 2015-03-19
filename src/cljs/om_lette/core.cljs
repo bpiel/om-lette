@@ -1,20 +1,11 @@
 (ns om-lette.core
   (:require [clojure.walk :as walk]
             [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]
             [ajax.core :refer [GET POST]]
-            [sablono.core :as sab :refer-macros [html]]
-            [hickory.core :as hick]
-            [clojure.string :as s]
-            [om-lette.templater :refer [load-templates cached-template->hiccup]]))
+            [om-lette.templater :refer [render-template load-templates cached-template->hiccup]]))
 
 (defn get-html-template [name handler]
   (GET (str "/js/templates/" name) {:handler handler}))
-
-(defn render-template
-  [tname state & {:keys [fns]}]
-  (sab/html  (cached-template->hiccup tname
-                                      (assoc state :fns fns))))
 
 ;; LIB ENDS HERE
 
