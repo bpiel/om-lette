@@ -46,11 +46,19 @@
     h
     nil))
 
-(defn has-om-lette? [h kw] (if-let [v (-> h like-html-vec? second :om-lette kw)] [h v] nil))
+(defn has-om-lette? [h kw] (when-let [v (-> h like-html-vec? second :om-lette kw)] [h v]))
 (defn has-om-if? [h] (has-om-lette? h :om-if))
 (defn has-om-repeat? [h] (has-om-lette? h :om-repeat))
 (defn is-om-text? [h] (and (vector? h) (= (first h) :om-text) (second h)))
 (defn is-om-code? [h] (and (vector? h) (= (first h) :om-code) (second h)))
+(defn has-listeners? [h] (when-let [ons (->> h like-html-vec? second keys
+                                             (filterv #(->> % str (take 3) (clojure.string/join "") (= ":on")))
+                                             seq)]
+                           (dbg2 "has-listeners?" [h (vec ons)])))
+
+(#(str (subs % 0 2) "-" (subs % 2)) "onclick")
+
+;; (->> "d" (take 3) (clojure.string/join "") (= ":on-"))
 
 (defn strip-attrs [tag & xattrs]
   (let [[name attrs & rest] tag] (vec (concat [name (apply dissoc attrs xattrs)] rest))))
@@ -145,8 +153,7 @@
        hick/as-hiccup
        (walk/postwalk (fn [t] (cond (string? t) (tokenize-string t)
                                     (like-html-vec? t) (-> t
-                                                           (update-in [1] grab-om-attrs [:om-if :om-repeat])
-                                                           (assoc-in [1 :on-click] #(.log js/console %)))
+                                                           (update-in [1] grab-om-attrs [:om-if :om-repeat]))
                                     :else t)))
        (walk/postwalk flatten-out)))
 
@@ -164,7 +171,7 @@
 (defn processors
   [state]
   [[is-om-text? identity]
-   [is-om-code? #(eval-parsed-code (-> % parse-code last) state) #_ #(get state % "")]
+   [is-om-code? #(eval-parsed-code (-> % parse-code last) state)]
    [has-om-if? (fn [[h ifx]]
                  (if (eval-om-if-expr ifx state)
                    h
@@ -179,7 +186,27 @@
                                first
                                second
                                parse-code
-                               (eval-parsed-code state))))]])
+                               (eval-parsed-code state))))]
+   [has-listeners? (fn [[h onkeys]]
+                     (update-in h [1]
+                                #(reduce (fn [agg k]
+                                           (let [strk (str k)
+                                                 on-k (keyword (str (subs strk 1 2)
+                                                                    "-"
+                                                                    (subs strk 3)))]
+
+                                             (-> agg
+                                                 (assoc on-k
+                                                   (eval-parsed-code (-> agg
+                                                                         k
+                                                                         parse-code
+                                                                         last)
+                                                                     state))
+                                                 (dissoc k))))
+                                         %
+                                         onkeys)))]])
+
+; #(str (subs % 0 2) "-" (subs % 2))
 
 (defn template->hiccup
   [tmplt state]

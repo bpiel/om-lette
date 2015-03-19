@@ -25,7 +25,12 @@
                (reify om/IRender (render [this]
                                    (render-template "hello.html"
                                                     state
-                                                    :fns {"x" inc}))))]
+                                                    :fns {"x" inc
+                                                          "incval1" (fn [_]
+                                                                      (swap! app-state
+                                                                             update-in
+                                                                             ["val1"]
+                                                                             inc))}))))]
     (om/root main app-state
              {:target (.getElementById js/document "app")})))
 
