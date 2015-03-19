@@ -54,7 +54,7 @@
 (defn has-listeners? [h] (when-let [ons (->> h like-html-vec? second keys
                                              (filterv #(->> % str (take 3) (clojure.string/join "") (= ":on")))
                                              seq)]
-                           (dbg2 "has-listeners?" [h (vec ons)])))
+                            [h (vec ons)]))
 
 (#(str (subs % 0 2) "-" (subs % 2)) "onclick")
 
@@ -135,7 +135,7 @@
             (if (not-empty sel-ks)
               (-> a
                   (#(apply dissoc % ks))
-                  (assoc :om-lette (select-keys a ks)))
+                  (assoc :om-lette sel-ks))
               a))]
     r))
 
@@ -189,22 +189,24 @@
                                (eval-parsed-code state))))]
    [has-listeners? (fn [[h onkeys]]
                      (update-in h [1]
-                                #(reduce (fn [agg k]
-                                           (let [strk (str k)
-                                                 on-k (keyword (str (subs strk 1 2)
-                                                                    "-"
-                                                                    (subs strk 3)))]
+                                (fn [attrs] (reduce (fn [agg k]
+                                                      (let [strk (str k)
+                                                            on-k (keyword (str (subs strk 1 3)
+                                                                               "-"
+                                                                               (subs strk 3)))]
 
-                                             (-> agg
-                                                 (assoc on-k
-                                                   (eval-parsed-code (-> agg
-                                                                         k
-                                                                         parse-code
-                                                                         last)
-                                                                     state))
-                                                 (dissoc k))))
-                                         %
-                                         onkeys)))]])
+                                                        (-> agg
+                                                            (assoc on-k
+                                                              (eval-parsed-code (->> agg
+                                                                                     k
+                                                                                     (mapcat second)
+                                                                                     (apply str)
+                                                                                     parse-code
+                                                                                     last)
+                                                                                state))
+                                                            (dissoc k))))
+                                                    attrs
+                                                    onkeys))))]])
 
 ; #(str (subs % 0 2) "-" (subs % 2))
 
