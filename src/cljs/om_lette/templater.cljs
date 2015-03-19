@@ -16,7 +16,7 @@
 (defn dbg2
   [l v]
   (.log js/console l)
-  (.log js/console v)
+  (.log js/console (clj->js v))
   v)
 
 (defn dbg2->
