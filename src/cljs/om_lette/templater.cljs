@@ -2,7 +2,8 @@
   (:require [clojure.walk :as walk]
             [hickory.core :as hick]
             [sablono.core :as sab :refer-macros [html]]
-            [clojure.string :as s]))
+            [clojure.string :as s]
+            [goog.string :as gstring]))
 
 (defn dbg
   [l v]
@@ -28,8 +29,9 @@
 
 (defn render-template
   [tname state & {:keys [fns]}]
+  (dbg2 "render-template state" state)
   (sab/html  (cached-template->hiccup tname
-                                      (assoc state :fns fns))))
+                                      (update-in state [:fns] merge fns))))
 
 (defn has-all-keys? [m keys]
   (apply = (map count [keys (select-keys m keys)])))
@@ -100,12 +102,15 @@
 
 (defn parse-code
   [s]
-  (.parse js/parser s))
+  (.parse js/parser (gstring/unescapeEntities s)))
 
 
 (defn eval-parsed-cljs-code
   [c state]
   (cond (= c "$") state
+        (= c "nil") nil
+        (= c "true") true
+        (= c "false") false
         (vector? c) (apply (let [func (first c)
                                  eval-func (eval-parsed-cljs-code func state)]
                              (if (fn? eval-func)
@@ -147,9 +152,9 @@
 
 (defn eval-om-if-expr
   [x state]
+  (dbg2 "om-if x = " x)
+  (dbg2 "om-if state = " state)
   (get state (apply str (mapcat second x))))
-
-
 
 (defn html->template
   [h]
@@ -228,7 +233,8 @@
                                        "hashmap" hash-map
                                        "set" set
                                        "resolve-symbol" #(or (get-in % [:fns %2])
-                                                             (get % %2 "[empty]"))}
+                                                             (dbg2 "r-s =" (get % (dbg2 "r-s %2 =" %2) "[empty]")))
+                                       "template" #(render-template % (dbg2 "template %2= " %2) :fns (:fns state))}
                                       fns)))]
     (->> tmplt
          (walk/prewalk (fn [h]
@@ -242,6 +248,7 @@
 
 (defn cached-template->hiccup
   [tname state]
+  (dbg2 "cached-template->hiccup state =" state)
   (let [r (template->hiccup (get @template-cache tname) state)]
     r))
 

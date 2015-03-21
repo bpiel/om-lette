@@ -16,6 +16,7 @@
 [-+]?([1-9][0-9]+|[0-9])             {return 'INTEGER';}
 \"(([^\"\\]|\\[\'\"\\bfnrt])*)\"              {return 'STRING';}
 [a-zA-Z*+!\-_=<>?/][0-9a-zA-Z*+!\-_=<>?/]*    {return 'IDENTIFIER';}
+[nil|true|false]                              {return 'DEITY'}
 
 [\s,]+                 {/*return 'SPACE';*/}
 \%(\&|[1-9]|1[0-9]|20)?          {return 'ANON_ARG';}
@@ -86,6 +87,7 @@ atom:         symbol
 literal:      STRING                       { $$ = $1.match(/^"(.+)"$/)[1]; }
   |           INTEGER                      { $$ = parseInt($1); }
   |           FLOAT                        { $$ = parseFloat($1); }
+  |           DEITY                        { $$ = $1; }
   ;
 
 keyword:      ':' IDENTIFIER               { $$ = ['keyword', $2]; }

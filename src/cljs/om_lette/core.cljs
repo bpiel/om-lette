@@ -9,7 +9,7 @@
 
 ;; LIB ENDS HERE
 
-(defonce app-state (atom {"val1" 1 "val2" 1 "show" true "vec" ["hi" 1 2 3]}))
+(defonce app-state (atom {"recur" 1 "val1" 1 "val2" 1 "show" true "vec" ["hi" 1 2 3]}))
 
 (defn init []
   (let [main (fn [state owner]
@@ -21,7 +21,10 @@
                                                                       (swap! app-state
                                                                              update-in
                                                                              ["val1"]
-                                                                             inc))}))))]
+                                                                             inc))
+                                                          "print" (fn [x]
+                                                                    (.log js/console x)
+                                                                    x)}))))]
     (om/root main app-state
              {:target (.getElementById js/document "app")})))
 
