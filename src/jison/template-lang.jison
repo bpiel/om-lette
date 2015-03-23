@@ -12,7 +12,7 @@
 "#"                     {return '#';}
 ":"                     {return ':';}
 
-(nil|true|false)                              {return 'DEITY'}
+(\$|nil|true|false)                              {return 'DEITY'}
 [-+]?[0-9]+((\.[0-9]*[eE][-+]?[0-9]+)|(\.[0-9]*)|([eE][-+]?[0-9]+))     {return 'FLOAT';}
 [-+]?([1-9][0-9]+|[0-9])             {return 'INTEGER';}
 \"(([^\"\\]|\\[\'\"\\bfnrt])*)\"              {return 'STRING';}
