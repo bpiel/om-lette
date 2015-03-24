@@ -19,6 +19,7 @@
   [l v]
   (.log js/console l)
   (.log js/console (clj->js v))
+  (.log js/console v)
   v)
 
 (defn dbg2->
@@ -27,11 +28,22 @@
 
 (defonce template-cache (atom {}))
 
+(def ^:dynamic *fns* {"=>" (fn [source dest]
+                             (mapv #(assoc state dest %)
+                                   source))
+                      "identity" identity
+                      "vector" vector
+                      "hashmap" hash-map
+                      "set" set
+                      "resolve-symbol" (fn [state symb] (or (get *fns* symb)
+                                                            (get state symb "[empty]")))
+                      "template" #(render-template % %2)})
+
 (defn render-template
   [tname state & {:keys [fns]}]
-  (dbg2 "render-template state" state)
-  (sab/html  (cached-template->hiccup tname
-                                      (update-in state [:fns] merge fns))))
+  (binding [*fns* (merge *fns* fns)]
+    (sab/html (cached-template->hiccup tname
+                                       state))))
 
 (defn has-all-keys? [m keys]
   (apply = (map count [keys (select-keys m keys)])))
@@ -115,8 +127,7 @@
                                  eval-func (eval-parsed-cljs-code func state)]
                              (if (fn? eval-func)
                                eval-func
-                               (get-in state
-                                       [:fns eval-func])))
+                               (get *fns* eval-func)))
                            (mapv #(eval-parsed-cljs-code % state)
                                  (rest c)))
         :default c))
@@ -152,8 +163,6 @@
 
 (defn eval-om-if-expr
   [x state]
-  (dbg2 "om-if x = " x)
-  (dbg2 "om-if state = " state)
   (get state (apply str (mapcat second x))))
 
 (defn html->template
@@ -223,32 +232,18 @@
 
 (defn template->hiccup
   [tmplt state]
-  (let [s (update-in state
-                     [:fns]
-                     (fn [fns] (merge {"=>" (fn [source dest]
-                                              (mapv #(assoc state dest %)
-                                                   source))
-                                       "identity" identity
-                                       "vector" vector
-                                       "hashmap" hash-map
-                                       "set" set
-                                       "resolve-symbol" #(or (get-in % [:fns %2])
-                                                             (dbg2 "r-s =" (get % (dbg2 "r-s %2 =" %2) "[empty]")))
-                                       "template" #(render-template % (dbg2 "template %2= " %2) :fns (:fns state))}
-                                      fns)))]
-    (->> tmplt
-         (walk/prewalk (fn [h]
-                         (reduce (fn [current [pred proc-fn]]
-                                   (if-let [r (pred current)]
-                                     (proc-fn r)
-                                     current))
-                                 h
-                                 (processors s))))
-         (walk/postwalk flatten-out))))
+  (->> tmplt
+       (walk/prewalk (fn [h]
+                       (reduce (fn [current [pred proc-fn]]
+                                 (if-let [r (pred current)]
+                                   (proc-fn r)
+                                   current))
+                               h
+                               (processors state))))
+       (walk/postwalk flatten-out)))
 
 (defn cached-template->hiccup
   [tname state]
-  (dbg2 "cached-template->hiccup state =" state)
   (let [r (template->hiccup (get @template-cache tname) state)]
     r))
 
