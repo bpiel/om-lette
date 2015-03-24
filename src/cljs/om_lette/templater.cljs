@@ -116,6 +116,7 @@
   [s]
   (.parse js/parser (gstring/unescapeEntities s)))
 
+(def mem-parse-code (memoize parse-code)) ;; this should probably go in the template cache instead
 
 (defn eval-parsed-cljs-code
   [c state]
@@ -191,7 +192,7 @@
 (defn processors
   [state]
   [[is-om-text? identity]
-   [is-om-code? #(eval-parsed-code (-> % parse-code last) state)]
+   [is-om-code? #(eval-parsed-code (-> % mem-parse-code last) state)]
    [has-om-if? (fn [[h ifx]]
                  (if (eval-om-if-expr ifx state)
                    h
@@ -205,7 +206,7 @@
                            (-> repx
                                first
                                second
-                               parse-code
+                               mem-parse-code
                                (eval-parsed-code state))))]
    [has-listeners? (fn [[h onkeys]]
                      (update-in h [1]
@@ -221,7 +222,7 @@
                                                                                      k
                                                                                      (mapcat second)
                                                                                      (apply str)
-                                                                                     parse-code
+                                                                                     mem-parse-code
                                                                                      last)
                                                                                 state))
                                                             (dissoc k))))
