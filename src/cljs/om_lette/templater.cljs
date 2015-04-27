@@ -3,6 +3,7 @@
             [hickory.core :as hick]
             [sablono.core :as sab :refer-macros [html]]
             [clojure.string :as s]
+            [ajax.core :refer [GET POST]]
             [goog.string :as gstring]))
 
 (defn dbg
@@ -53,13 +54,6 @@
     (if (has-all-keys? @template-cache names)
       (callback))))
 
-;; regex
-(def nonnum "[a-zA-Z\\*\\+!\\-\\_\\?]")
-(def valid-sym-chars "[\\w\\d\\*\\+!\\-\\_\\?]")
-(def valid-sym (str nonnum "+" valid-sym-chars "*"))
-
-;; *******
-
 (defn like-html-vec?
   [h]
   (if (and (vector? h) (-> h first keyword?)(-> h second map?))
@@ -79,9 +73,6 @@
 (#(str (subs % 0 2) "-" (subs % 2)) "onclick")
 
 ;; (->> "d" (take 3) (clojure.string/join "") (= ":on-"))
-
-(defn strip-attrs [tag & xattrs]
-  (let [[name attrs & rest] tag] (vec (concat [name (apply dissoc attrs xattrs)] rest))))
 
 (defn drop-delim
   [x]
@@ -164,7 +155,7 @@
 
 (defn eval-om-if-expr
   [x state]
-  (get state (apply str (mapcat second x))))
+  (get state (apply str (mapcat second x)))) ;; TODO use full parse/eval
 
 (defn html->template
   [h]
@@ -194,7 +185,13 @@
   [[is-om-text? identity]
    [is-om-code? #(eval-parsed-code (-> % mem-parse-code last) state)]
    [has-om-if? (fn [[h ifx]]
-                 (if (eval-om-if-expr ifx state)
+                 (if (-> ifx
+                         first
+                         second
+                         mem-parse-code
+                         first
+                         (eval-parsed-code state)
+                         (dbg2-> "if="))
                    h
                    nil))]
    [has-om-repeat? (fn [[h repx]]
@@ -229,8 +226,6 @@
                                                     attrs
                                                     onkeys))))]])
 
-; #(str (subs % 0 2) "-" (subs % 2))
-
 (defn template->hiccup
   [tmplt state]
   (->> tmplt
@@ -247,6 +242,10 @@
   [tname state]
   (let [r (template->hiccup (get @template-cache tname) state)]
     r))
+
+(defn make-template-fetch-fn [url-provider-fn]
+  (fn [template-name handler]
+    (GET (url-provider-fn template-name) {:handler handler})))
 
 #_ (-> "<div>{{a}}</div" html->template (template->hiccup {"a" 33}))
 

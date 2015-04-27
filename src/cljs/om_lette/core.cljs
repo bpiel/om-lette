@@ -1,15 +1,17 @@
 (ns om-lette.core
   (:require [clojure.walk :as walk]
             [om.core :as om :include-macros true]
-            [ajax.core :refer [GET POST]]
-            [om-lette.templater :refer [render-template load-templates cached-template->hiccup]]))
+            [om-lette.templater :refer [render-template
+                                        load-templates
+                                        cached-template->hiccup
+                                        make-template-fetch-fn]]))
 
-(defn get-html-template [name handler]
-  (GET (str "/js/templates/" name) {:handler handler}))
-
-;; LIB ENDS HERE
-
-(defonce app-state (atom {"recur" 1 "val1" 1 "val2" 1 "show" true "vec" ["hi" 1 2 3]}))
+(defonce app-state (atom {"recur" 1
+                          "val1" 1
+                          "val2" 1
+                          "show" true
+                          "vec" ["hi" 1 2 3]
+                          "sub" {"a" "sub-a"}}))
 
 (defn init []
   (let [main (fn [state owner]
@@ -27,7 +29,10 @@
     (om/root main app-state
              {:target (.getElementById js/document "app")})))
 
-(load-templates ["hello.html"] get-html-template init)
+(load-templates ["hello.html"
+                 "t2.html"]
+                (make-template-fetch-fn #(str "/js/templates/" %))
+                init)
 
 (js/setTimeout #(swap! app-state update-in ["val1"] inc) 1000)
 (js/setTimeout #(swap! app-state update-in ["val2"] (partial * 2)) 2000)
